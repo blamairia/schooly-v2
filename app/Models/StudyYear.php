@@ -1,17 +1,18 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class PaymentType extends Model
+class StudyYear extends Model
 {
     protected $fillable = [
-        'name',
+        'year',
     ];
 
-    public function payments(): HasMany
+    public function students(): HasMany
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(Student::class, 'study_year');
     }
 }

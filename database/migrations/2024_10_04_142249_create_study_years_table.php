@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payment_types', function (Blueprint $table) {
+        Schema::create('study_years', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('year')->unique();
             $table->timestamps();
         });
 
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('payment_types');
+        Schema::dropIfExists('study_years');
     }
 };
