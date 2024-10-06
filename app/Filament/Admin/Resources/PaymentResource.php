@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\PaymentResource\Pages;
@@ -22,9 +21,48 @@ class PaymentResource extends Resource
             ->schema([
 
                 Forms\Components\Select::make('student_id')
-                    ->relationship('student', 'full_name')
+                    ->relationship('student', 'id')
                     ->getOptionLabelFromRecordUsing(fn($record) => "{$record->first_name} {$record->last_name}")
-                    ->required(),
+                    ->required()
+                    ->searchable()
+                    ->getSearchResultsUsing(function (string $query) {
+                        return \App\Models\Student::whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$query}%"])
+                            ->get()
+                            ->mapWithKeys(function ($student) {
+                                return [$student->id => "{$student->first_name} {$student->last_name}"];
+                            });
+                    })
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('first_name')
+                            ->required(),
+                        Forms\Components\TextInput::make('last_name')
+                            ->required(),
+                        Forms\Components\DatePicker::make('birth_date')
+                            ->required(),
+                        Forms\Components\TextInput::make('birth_place')
+                            ->required(),
+                        Forms\Components\TextInput::make('phone_number')
+                            ->required(),
+                        Forms\Components\Select::make('parent_id')
+                            ->relationship('parent', 'first_name')
+                            ->getOptionLabelFromRecordUsing(fn($record) => "{$record->first_name} {$record->last_name}")
+                            ->required(),
+                        Forms\Components\Select::make('class_assigned_id')
+                            ->relationship('classAssigned', 'name')
+                            ->required(),
+                        Forms\Components\Select::make('study_year_id')
+                            ->relationship('studyYear', 'year')
+                            ->required(),
+                        Forms\Components\Select::make('cassier_id')
+                            ->relationship('cassier', 'number')
+                            ->nullable(),
+                        Forms\Components\DatePicker::make('cassier_expiration')
+                            ->nullable(),
+                        Forms\Components\TextInput::make('address')
+                            ->required(),
+                    ]),
+
+
 
                 Forms\Components\Select::make('payment_type_id')
                     ->relationship('paymentType', 'name')
@@ -33,8 +71,9 @@ class PaymentResource extends Resource
                 Forms\Components\Select::make('division_plan_id')
                     ->relationship('divisionPlan', 'name')
                     ->required()
-                    ->reactive() // To update the part options based on division plan selection
+                    ->reactive()
                     ->afterStateUpdated(fn ($state, callable $set) => $set('part_number', null)),
+
                 Forms\Components\Select::make('part_number')
                     ->options(function (callable $get) {
                         $divisionPlanId = $get('division_plan_id');
@@ -57,25 +96,52 @@ class PaymentResource extends Resource
                             }
                         }
                     }),
-                // Fetch available parts for the selected division plan
+
                 Forms\Components\DatePicker::make('due_date')
                     ->required()
-                    ->disabled() ,
-
-                Forms\Components\TextInput::make('total_amount')
-                    ->required()
-                    ->numeric(),
-
-                Forms\Components\TextInput::make('amount_due')
-                    ->numeric(),
-
-                Forms\Components\TextInput::make('amount_paid')
-                    ->numeric(),
-
-                // Automatically populate and disable the due date based on the selected part number
+                    ->reactive(),
 
 
-                Forms\Components\TextInput::make('status')->required(),
+
+
+                    Forms\Components\TextInput::make('total_amount')
+                        ->label('Total Amount')
+                        ->numeric() // Enforce numeric input
+                        ->required()
+                        ->reactive() // React when the value changes
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            $amountPaid = $get('amount_paid') ?? 0;
+                            $amountDue = $state - $amountPaid;
+
+                            // Ensure amount_due is not negative
+                            $set('amount_due', max($amountDue, 0));
+                        }),
+
+                    Forms\Components\TextInput::make('amount_paid')
+                        ->label('Amount Paid')
+                        ->numeric() // Enforce numeric input
+                        ->default(0)
+                        ->reactive() // React when the value changes
+                        ->extraInputAttributes(['min' => 0]) // Prevent negative input in the UI
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            $totalAmount = $get('total_amount') ?? 0;
+                            $amountDue = $totalAmount - $state;
+
+                            // Ensure the paid amount does not exceed total amount and update amount_due
+                            if ($state > $totalAmount) {
+                                $set('amount_paid', $totalAmount);
+                                $set('amount_due', 0); // Set amount_due to 0 when total is paid
+                            } else {
+                                $set('amount_due', max($amountDue, 0)); // Ensure no negative amount_due
+                            }
+                        }),
+
+                    Forms\Components\TextInput::make('amount_due')
+                        ->label('Amount Due')
+                        ->numeric()
+                        ->reactive()
+                        ->required(),
+
 
                 Forms\Components\Select::make('payment_method')
                     ->options([
@@ -84,6 +150,27 @@ class PaymentResource extends Resource
                         'check' => 'Check',
                     ])
                     ->required(),
+
+                // Automatically set payment status
+                Forms\Components\Select::make('status')
+                    ->options([
+                        'paid' => 'Paid',
+                        'partial' => 'Partial',
+                        'unpaid' => 'Unpaid',
+                    ])
+                    ->default(function (callable $get) {
+                        $totalAmount = $get('total_amount') ?? 0;
+                        $amountPaid = $get('amount_paid') ?? 0;
+
+                        if ($amountPaid >= $totalAmount) {
+                            return 'paid';
+                        } elseif ($amountPaid > 0) {
+                            return 'partial';
+                        }
+
+                        return 'unpaid';
+                    })
+                    ->reactive(),
             ]);
     }
 
@@ -107,11 +194,6 @@ class PaymentResource extends Resource
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [];
     }
 
     public static function getPages(): array
