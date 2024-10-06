@@ -6,6 +6,7 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\StudentResource\Pages;
 use App\Filament\Admin\Resources\StudentResource\RelationManagers;
 use App\Models\DivisionDeadline;
+use App\Models\PaymentType;
 use App\Models\Student;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -46,6 +47,19 @@ class StudentResource extends Resource
                 // Payments Repeater (Full Width)
                 Forms\Components\Repeater::make('payments')
                     ->relationship('payments')
+                    ->default(collect(PaymentType::all())->map(function ($paymentType) {
+                        return [
+                            'payment_type_id' => $paymentType->id, // Preselect the payment type
+                            'division_plan_id' => null,
+                            'part_number' => null,
+                            'due_date' => null,
+                            'total_amount' => null,
+                            'amount_paid' => 0,
+                            'amount_due' => null,
+                            'payment_method' => 'cash', // Default payment method
+                            'status' => 'unpaid', // Default status
+                        ];
+                    })->toArray())
                     ->schema([
                         Forms\Components\Grid::make(5) // Adjust the grid layout as needed
                             ->schema([
@@ -91,7 +105,7 @@ class StudentResource extends Resource
                                     ->columnSpan(1),
 
                                 // Due Date (Hidden)
-                                Forms\Components\Hidden::make('due_date')
+                                Forms\Components\DatePicker::make('due_date')
                                     ->required(),
 
                                 // Total Amount
