@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\StudentResource\Pages;
 use App\Filament\Admin\Resources\StudentResource\RelationManagers;
+use App\Models\DivisionDeadline;
 use App\Models\Student;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -31,11 +32,6 @@ class StudentResource extends Resource
                     ->relationship('parent', 'first_name') // This line initializes the relationship
                     ->getOptionLabelFromRecordUsing(fn($record) => "{$record->first_name} {$record->last_name}") // Concatenate first and last names
                     ->required(),
-
-
-
-
-
                 Forms\Components\Select::make('class_assigned_id')
                     ->relationship('classAssigned', 'name')
                     ->required(),
@@ -47,6 +43,118 @@ class StudentResource extends Resource
                     ->nullable(),
                 Forms\Components\DatePicker::make('cassier_expiration')->nullable(),
                 Forms\Components\TextInput::make('address')->required(),
+                // Payments Repeater (Full Width)
+                Forms\Components\Repeater::make('payments')
+                    ->relationship('payments')
+                    ->schema([
+                        Forms\Components\Grid::make(5) // Adjust the grid layout as needed
+                            ->schema([
+
+                                // Payment Type
+                                Forms\Components\Select::make('payment_type_id')
+                                    ->relationship('paymentType', 'name')
+                                    ->required()
+                                    ->label('Payment Type')
+                                    ->columnSpan(1),
+
+                                // Division Plan
+                                Forms\Components\Select::make('division_plan_id')
+                                    ->relationship('divisionPlan', 'name')
+                                    ->required()
+                                    ->reactive()
+                                    ->afterStateUpdated(fn ($state, callable $set) => $set('part_number', null))
+                                    ->columnSpan(1),
+
+                                // Part Number
+                                Forms\Components\Select::make('part_number')
+                                    ->options(function (callable $get) {
+                                        $divisionPlanId = $get('division_plan_id');
+                                        if ($divisionPlanId) {
+                                            return DivisionDeadline::where('division_plan_id', $divisionPlanId)
+                                                ->pluck('part_number', 'part_number');
+                                        }
+                                        return [];
+                                    })
+                                    ->required()
+                                    ->reactive()
+                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                        $divisionPlanId = $get('division_plan_id');
+                                        if ($divisionPlanId && $state) {
+                                            $deadline = DivisionDeadline::where('division_plan_id', $divisionPlanId)
+                                                ->where('part_number', $state)
+                                                ->first();
+                                            if ($deadline) {
+                                                $set('due_date', $deadline->due_date);
+                                            }
+                                        }
+                                    })
+                                    ->columnSpan(1),
+
+                                // Due Date (Hidden)
+                                Forms\Components\Hidden::make('due_date')
+                                    ->required(),
+
+                                // Total Amount
+
+                                Forms\Components\TextInput::make('total_amount')
+                                        ->label('Total Amount')
+                                        ->numeric()
+                                        ->required()
+                                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                            // Perform calculations here but don’t reset the value in real-time
+                                            $amountPaid = $get('amount_paid') ?? 0;
+                                            $amountDue = max($state - $amountPaid, 0);
+
+                                            // Just update amount_due
+                                            $set('amount_due', $amountDue);
+                                        })
+                                        ->debounce(500), // Add a debounce time
+
+
+                                    Forms\Components\TextInput::make('amount_paid')
+                                        ->label('Amount Paid')
+                                        ->numeric()
+                                        ->default(0)
+                                        ->reactive()
+                                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                            $totalAmount = $get('total_amount') ?? 0;
+
+                                            // Update only if paid amount is valid
+                                            if ($state > 0 && $state <= $totalAmount) {
+                                                $set('amount_due', $totalAmount - $state);
+                                            }
+                                        }),
+
+
+                                // Amount Due (Hidden)
+                                Forms\Components\TextInput::make('amount_due')
+                                    ->numeric()
+                                    ->dehydrateStateUsing(fn ($state) => $state)
+                                    ->required(),
+
+
+                                // Payment Method
+                                Forms\Components\Select::make('payment_method')
+                                    ->options([
+                                        'cash' => 'Cash',
+                                        'card' => 'Card',
+                                        'check' => 'Check',
+                                    ])
+                                    ->required()
+                                    ->columnSpan(1),
+
+                                // Status (Hidden)
+                                Forms\Components\Hidden::make('status')
+                                    ->default('unpaid'), // Default status to unpaid
+                            ])
+                    ])
+                    ->columns(1) // Repeater should take full width
+                    ->label('Payments')
+                    ->createItemButtonLabel('Add Payment')
+                    ->collapsible()
+                    ->minItems(1)
+                    ->columnSpan('full'),// The repeater occupies full width
+
             ]);
     }
 
@@ -60,6 +168,8 @@ class StudentResource extends Resource
                 Tables\Columns\TextColumn::make('studyYear.year'),
                 Tables\Columns\TextColumn::make('cassier.number')->label('Cassier'),
                 Tables\Columns\TextColumn::make('cassier_expiration')->label('Cassier Expiration'),
+                 // Payments Repeater
+
             ])
             ->filters([])
             ->actions([
