@@ -56,7 +56,7 @@ class StudentResource extends Resource
                             'total_amount' => null,
                             'amount_paid' => 0,
                             'amount_due' => null,
-                            'payment_method' => 'cash', // Default payment method
+                            'payment_method_id' => 1, // Default payment method
                             'status' => 'unpaid', // Default status
                         ];
                     })->toArray())
@@ -148,18 +148,24 @@ class StudentResource extends Resource
 
 
                                 // Payment Method
-                                Forms\Components\Select::make('payment_method')
-                                    ->options([
-                                        'cash' => 'Cash',
-                                        'card' => 'Card',
-                                        'check' => 'Check',
-                                    ])
-                                    ->required()
-                                    ->columnSpan(1),
+                                Forms\Components\Select::make('payment_method_id')
+                                    ->relationship('paymentMethod', 'method_name')
+                                    ->required(),
 
                                 // Status (Hidden)
                                 Forms\Components\Hidden::make('status')
                                     ->default('unpaid'), // Default status to unpaid
+
+
+                                Forms\Components\Select::make('study_year_id')
+                                    ->relationship('studyYear', 'year') // Assuming you have a relationship set up
+                                    ->default(function (callable $get) {
+                                        // Retrieve the latest study year ID
+                                        return \App\Models\StudyYear::latest()->first()->id ?? null;
+                                    })
+                                    ->required()
+                                    ->label('Study Year'),
+
                             ])
                     ])
                     ->columns(1) // Repeater should take full width
@@ -194,12 +200,7 @@ class StudentResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            RelationManagers\PaymentsRelationManager::class,
-        ];
-    }
+
 
     public static function getPages(): array
     {

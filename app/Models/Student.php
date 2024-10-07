@@ -41,7 +41,10 @@ class Student extends Model
     {
         return $this->hasMany(Payment::class);
     }
-
+    public function paymentTotals(): HasMany
+    {
+        return $this->hasMany(PaymentTotal::class);
+    }
     public function cassier(): BelongsTo
     {
         return $this->belongsTo(Cassier::class);

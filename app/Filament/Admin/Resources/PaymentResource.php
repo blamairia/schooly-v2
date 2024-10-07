@@ -61,6 +61,14 @@ class PaymentResource extends Resource
                         Forms\Components\TextInput::make('address')
                             ->required(),
                     ]),
+                    Forms\Components\Select::make('study_year_id')
+                                    ->relationship('studyYear', 'year') // Assuming you have a relationship set up
+                                    ->default(function (callable $get) {
+                                        // Retrieve the latest study year ID
+                                        return \App\Models\StudyYear::latest()->first()->id ?? null;
+                                    })
+                                    ->required()
+                                    ->label('Study Year'),
 
 
 
@@ -143,13 +151,13 @@ class PaymentResource extends Resource
                         ->required(),
 
 
-                Forms\Components\Select::make('payment_method')
-                    ->options([
-                        'cash' => 'Cash',
-                        'card' => 'Card',
-                        'check' => 'Check',
-                    ])
-                    ->required(),
+                    Forms\Components\Select::make('payment_method_id') // Change to payment_method_id
+                        ->relationship('paymentMethod', 'method_name') // 'paymentMethod' is the relationship defined in the model
+                        ->required()
+                        ->label('Payment Method')
+                        ->placeholder('Select a payment method')
+                        ->searchable(),
+
 
                 // Automatically set payment status
                 Forms\Components\Select::make('status')
