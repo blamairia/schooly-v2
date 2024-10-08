@@ -9,7 +9,11 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
 
 class PaymentResource extends Resource
 {
@@ -193,9 +197,43 @@ class PaymentResource extends Resource
                 Tables\Columns\TextColumn::make('amount_paid'),
                 Tables\Columns\TextColumn::make('status'),
                 Tables\Columns\TextColumn::make('due_date'),
-                Tables\Columns\TextColumn::make('payment_method'),
+                Tables\Columns\TextColumn::make('paymentMethod.method_name')
             ])
-            ->filters([])
+            ->filters([
+                // Filter by Payment Type
+                SelectFilter::make('payment_type_id')
+                    ->relationship('paymentType', 'name')
+                    ->label('Payment Type')
+                    ->placeholder('Select a Payment Type'),
+
+                // Filter by Payment Method (Now filtering by payment_method_id)
+                SelectFilter::make('payment_method_id')
+                    ->relationship('paymentMethod', 'method_name') // Use payment method relationship
+                    ->label('Payment Method')
+                    ->placeholder('Select a Payment Method'),
+
+                // Filter by Payment Status
+                SelectFilter::make('status')
+                    ->options([
+                        'paid' => 'Paid',
+                        'partial' => 'Partial',
+                        'unpaid' => 'Unpaid',
+                    ])
+                    ->label('Payment Status')
+                    ->placeholder('Select Payment Status'),
+
+                // Filter by Date Range
+                DateFilter::make('due_date')
+                    ->label('Due Date'),
+
+                // Today Filter (Toggle Switch)
+                Filter::make('today')
+                    ->label('Today\'s Payments')
+                    ->toggle()
+                    ->query(function ($query) {
+                        return $query->whereDate('created_at', today());
+                    }),
+            ],layout: FiltersLayout::AboveContent)
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])

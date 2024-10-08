@@ -195,6 +195,14 @@ class StudentResource extends Resource
         $staticColumns = [
             TextColumn::make('first_name')->label('First Name'),
             TextColumn::make('last_name')->label('Last Name'),
+            TextColumn::make('full_name')
+                    ->label('Full Name')
+                    ->getStateUsing(fn (Student $record) => "{$record->first_name} {$record->last_name}")
+                    ->sortable()
+                    ->searchable(query: function ($query, string $search) {
+                        return $query->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%");
+                    }),
             TextColumn::make('classAssigned.name')->label('Class Assigned'),
             TextColumn::make('cassier.number')->label('Cassier'),
         ];
@@ -233,7 +241,8 @@ class StudentResource extends Resource
                         $query->whereIn('id', $studentIdsWithPaymentsToday);
                     }),
                 ],layout: FiltersLayout::AboveContent) // Add the filter for payments made today
-            ->actions([
+
+                ->actions([
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
