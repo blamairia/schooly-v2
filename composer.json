@@ -9,6 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
+        "awcodes/overlook": "^2.2",
         "filament/actions": "^3.2",
         "filament/filament": "^3.2",
         "filament/forms": "^3.2",
@@ -19,7 +20,9 @@
         "laravel/jetstream": "^4.3",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
-        "livewire/livewire": "^3.0"
+        "livewire/livewire": "^3.0",
+        "oriondevelops/filament-greeter": "^0.2.0",
+        "webbingbrasil/filament-advancedfilter": "3.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.14",

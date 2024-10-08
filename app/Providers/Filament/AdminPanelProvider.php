@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use Awcodes\Overlook\OverlookPlugin;
+use Awcodes\Overlook\Widgets\OverlookWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -37,6 +39,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+                OverlookWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -49,6 +52,8 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            ->viteTheme('resources/css/filament/admin/theme.css')
+
             ->authMiddleware([
                 Authenticate::class,
             ]);

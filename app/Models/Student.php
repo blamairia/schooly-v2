@@ -45,6 +45,17 @@ class Student extends Model
     {
         return $this->hasMany(PaymentTotal::class);
     }
+
+    public function getPaymentTotalForType($paymentTypeId)
+{
+    // Find the payment totals for this student and the given payment type
+    $paymentTotal = $this->payments()
+        ->where('payment_type_id', $paymentTypeId)
+        ->sum('amount_paid'); // Assuming you want to sum the paid amount
+
+    return $paymentTotal;
+}
+
     public function cassier(): BelongsTo
     {
         return $this->belongsTo(Cassier::class);

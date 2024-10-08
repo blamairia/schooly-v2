@@ -6,13 +6,21 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\StudentResource\Pages;
 use App\Filament\Admin\Resources\StudentResource\RelationManagers;
 use App\Models\DivisionDeadline;
+use App\Models\Payment;
+use App\Models\PaymentTotal;
 use App\Models\PaymentType;
 use App\Models\Student;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class StudentResource extends Resource
 {
@@ -180,18 +188,51 @@ class StudentResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('first_name'),
-                Tables\Columns\TextColumn::make('last_name'),
-                Tables\Columns\TextColumn::make('classAssigned.name'),
-                Tables\Columns\TextColumn::make('studyYear.year'),
-                Tables\Columns\TextColumn::make('cassier.number')->label('Cassier'),
-                Tables\Columns\TextColumn::make('cassier_expiration')->label('Cassier Expiration'),
-                 // Payments Repeater
+        // Fetch all available payment types
+        $paymentTypes = PaymentType::all();
 
-            ])
-            ->filters([])
+        // Static columns for the student details
+        $staticColumns = [
+            TextColumn::make('first_name')->label('First Name'),
+            TextColumn::make('last_name')->label('Last Name'),
+            TextColumn::make('classAssigned.name')->label('Class Assigned'),
+            TextColumn::make('cassier.number')->label('Cassier'),
+        ];
+
+        // Dynamically create columns for each payment type
+        $dynamicColumns = $paymentTypes->map(function ($paymentType) {
+            return TextColumn::make("payment_type_{$paymentType->id}_total")
+                ->label($paymentType->name)
+                ->getStateUsing(function ($record) use ($paymentType) {
+                    // Fetch the pre-calculated total from the payment_totals table
+                    $paymentTotal = PaymentTotal::where('student_id', $record->id)
+                        ->where('payment_type_id', $paymentType->id)
+                        ->value('total_amount');
+                    return $paymentTotal ? number_format($paymentTotal, 2) : '0.00';
+                });
+        })->toArray();
+
+        // Define filters
+        $filters = [
+
+        ];
+
+        // Merge static and dynamic columns
+        return $table
+            ->columns(array_merge($staticColumns, $dynamicColumns))
+            ->filters([
+                Filter::make('payments_today')
+                    ->label('Payments Today')
+                    ->query(function (Builder $query) {
+                        // Filter logic: payments made today
+                        $studentIdsWithPaymentsToday = Payment::whereDate('updated_at', Carbon::today())
+                            ->pluck('student_id')
+                            ->unique();
+
+                        // Apply the filter by student IDs
+                        $query->whereIn('id', $studentIdsWithPaymentsToday);
+                    }),
+                ],layout: FiltersLayout::AboveContent) // Add the filter for payments made today
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
@@ -199,6 +240,8 @@ class StudentResource extends Resource
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
+
+
 
 
 
