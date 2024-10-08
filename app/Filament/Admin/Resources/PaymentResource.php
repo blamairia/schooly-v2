@@ -3,17 +3,22 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\PaymentResource\Pages;
+use App\Filament\Widgets\PaymentStats;
 use App\Models\Payment;
 use App\Models\DivisionDeadline;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Validation\ValidationException;
 use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
+use App\Filament\Admin\Resources\PaymentResource\Widgets;
 
 class PaymentResource extends Resource
 {
@@ -120,7 +125,8 @@ class PaymentResource extends Resource
                         ->label('Total Amount')
                         ->numeric() // Enforce numeric input
                         ->required()
-                        ->reactive() // React when the value changes
+
+                        ->debounce(500) // React when the value changes
                         ->afterStateUpdated(function ($state, callable $set, callable $get) {
                             $amountPaid = $get('amount_paid') ?? 0;
                             $amountDue = $state - $amountPaid;
@@ -133,7 +139,8 @@ class PaymentResource extends Resource
                         ->label('Amount Paid')
                         ->numeric() // Enforce numeric input
                         ->default(0)
-                        ->reactive() // React when the value changes
+
+                        ->debounce(500)// React when the value changes
                         ->extraInputAttributes(['min' => 0]) // Prevent negative input in the UI
                         ->afterStateUpdated(function ($state, callable $set, callable $get) {
                             $totalAmount = $get('total_amount') ?? 0;
@@ -152,15 +159,14 @@ class PaymentResource extends Resource
                         ->label('Amount Due')
                         ->numeric()
                         ->reactive()
-                        ->required(),
-
-
-                    Forms\Components\Select::make('payment_method_id') // Change to payment_method_id
-                        ->relationship('paymentMethod', 'method_name') // 'paymentMethod' is the relationship defined in the model
                         ->required()
-                        ->label('Payment Method')
-                        ->placeholder('Select a payment method')
-                        ->searchable(),
+                        ->dehydrated(false),
+
+
+                        Forms\Components\Select::make('payment_method_id')
+                        ->relationship('paymentMethod', 'method_name')
+                        ->required()
+                        ->label('Payment Method'),
 
 
                 // Automatically set payment status
@@ -190,14 +196,102 @@ class PaymentResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('student.first_name'),
+                Tables\Columns\TextColumn::make('student.full_name') // Access student relationship
+                    ->label('Full Name')
+                    ->getStateUsing(fn ($record) => "{$record->student->first_name} {$record->student->last_name}")
+                    ->sortable()
+                    ->searchable(query: function ($query, string $search) {
+                        return $query->whereHas('student', function ($query) use ($search) {
+                            $query->where('first_name', 'like', "%{$search}%")
+                                ->orWhere('last_name', 'like', "%{$search}%");
+                        });
+                    }),
+
                 Tables\Columns\TextColumn::make('paymentType.name'),
-                Tables\Columns\TextColumn::make('total_amount'),
-                Tables\Columns\TextColumn::make('amount_due'),
-                Tables\Columns\TextColumn::make('amount_paid'),
-                Tables\Columns\TextColumn::make('status'),
+                            // Inline editable columns
+                        // Total Amount as a TextInputColumn
+                // Total Amount as a TextInputColumn
+                TextInputColumn::make('total_amount')
+                    ->label('Total Amount')
+                    ->rules(['required', 'numeric', 'min:0']) // Validation to ensure total_amount is >= 0
+                    ->beforeStateUpdated(function ($record, $state) {
+                        if ($state < $record->amount_paid) {
+                            throw new \Exception('Total amount cannot be less than the amount already paid.');
+                        }
+                    })
+                    ->afterStateUpdated(function ($record, $state) {
+                        $record->amount_due = max($state - $record->amount_paid, 0);
+                        $record->status = $record->amount_paid >= $state ? 'paid' : ($record->amount_paid > 0 ? 'partial' : 'unpaid');
+                        $record->save();
+                    }),
+
+                    // Amount Paid as a TextInputColumn
+                    TextInputColumn::make('amount_paid')
+                        ->label('Amount Paid')
+                        ->rules(['required', 'numeric', 'min:0']) // Basic rules for validation
+                        ->beforeStateUpdated(function ($record, $state) {
+                            // Convert values to float for accurate comparison
+                            $state = floatval($state);
+                            $totalAmount = floatval($record->total_amount);
+
+                            // Validate that amount_paid does not exceed total_amount
+                            if ($state > $totalAmount) {
+                                // Handle the exception: notify the user and stop the update
+                                Notification::make()
+                                    ->title('Validation Error')
+                                    ->danger()
+                                    ->body('Paid amount cannot exceed the total amount.')
+                                    ->send();
+
+                                // Stop the state update
+                                throw ValidationException::withMessages([
+                                    'amount_paid' => 'Paid amount cannot exceed the total amount.',
+                                ]);
+                            }
+                        })
+                        ->afterStateUpdated(function ($record, $state) {
+                            // After validation, update the amount_due and status
+                            $record->amount_due = max($record->total_amount - $state, 0);
+                            $record->status = $state >= $record->total_amount ? 'paid' : ($state > 0 ? 'partial' : 'unpaid');
+                            $record->save();
+                        }),
+
+
+
+
+                // Amount Due as a TextInputColumn (not editable)
+                TextInputColumn::make('amount_due')
+                    ->label('Amount Due')
+                    ->rules(['required', 'numeric'])
+                    ->disabled() // Prevent editing this field
+                    ->getStateUsing(function ($record) {
+                        return max($record->total_amount - $record->amount_paid, 0); // Calculate dynamically
+                    }),
+
+                // Amount Due as a TextInputColumn (this one is not editable)
+                TextInputColumn::make('amount_due')
+                    ->label('Amount Due')
+                    ->rules(['required', 'numeric'])
+                    ->disabled() // Prevent editing this field
+                    ->getStateUsing(function ($record) {
+                        return max($record->total_amount - $record->amount_paid, 0); // Calculate dynamically
+                    }),
+
+                Tables\Columns\BadgeColumn::make('status')
+                    ->label('Status')
+                    ->colors([
+                        'danger' => 'unpaid',    // Unpaid in red
+                        'warning' => 'partial',  // Partial in yellow
+                        'success' => 'paid',     // Paid in green
+                    ]),
                 Tables\Columns\TextColumn::make('due_date'),
-                Tables\Columns\TextColumn::make('paymentMethod.method_name')
+                Tables\Columns\BadgeColumn::make('paymentMethod.method_name')
+                    ->label('Payment Method')
+                    ->colors([
+                        'primary' => 'cash',    // Cash in primary color
+                        'success' => 'card',    // Card in green
+                        'warning' => 'check',   // Check in yellow
+                    ]),
             ])
             ->filters([
                 // Filter by Payment Type
@@ -250,4 +344,16 @@ class PaymentResource extends Resource
             'edit' => Pages\EditPayment::route('/{record}/edit'),
         ];
     }
+
+    public static function getWidgets(): array {
+        return [
+            PaymentStats::class,
+        ];
+    }
+    protected function getHeaderWidgets(): array {
+        return [
+            PaymentStats::class,
+        ];
+    }
+
 }
