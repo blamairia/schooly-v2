@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
@@ -213,15 +214,33 @@ class PaymentResource extends Resource
                 // Total Amount as a TextInputColumn
                 TextInputColumn::make('total_amount')
                     ->label('Total Amount')
-                    ->rules(['required', 'numeric', 'min:0']) // Validation to ensure total_amount is >= 0
+                    ->rules(['required', 'numeric', 'min:0']) // Ensure total_amount is >= 0
                     ->beforeStateUpdated(function ($record, $state) {
-                        if ($state < $record->amount_paid) {
-                            throw new \Exception('Total amount cannot be less than the amount already paid.');
+                        // Convert values to float for accurate comparison
+                        $state = floatval($state);
+                        $amountPaid = floatval($record->amount_paid);
+
+                        // Validate that total_amount cannot be less than amount_paid
+                        if ($state < $amountPaid) {
+                            // Notify the user about the validation error
+                            Notification::make()
+                                ->title('Validation Error')
+                                ->danger()
+                                ->body('Total amount cannot be less than the amount already paid.')
+                                ->send();
+
+                            // Prevent the update by throwing a validation exception
+                            throw ValidationException::withMessages([
+                                'total_amount' => 'Total amount cannot be less than the amount already paid.',
+                            ]);
                         }
                     })
                     ->afterStateUpdated(function ($record, $state) {
+                        // Recalculate amount_due and update status after validation
                         $record->amount_due = max($state - $record->amount_paid, 0);
-                        $record->status = $record->amount_paid >= $state ? 'paid' : ($record->amount_paid > 0 ? 'partial' : 'unpaid');
+                        $record->status = $record->amount_paid >= $state
+                            ? 'paid'
+                            : ($record->amount_paid > 0 ? 'partial' : 'unpaid');
                         $record->save();
                     }),
 
@@ -269,13 +288,7 @@ class PaymentResource extends Resource
                     }),
 
                 // Amount Due as a TextInputColumn (this one is not editable)
-                TextInputColumn::make('amount_due')
-                    ->label('Amount Due')
-                    ->rules(['required', 'numeric'])
-                    ->disabled() // Prevent editing this field
-                    ->getStateUsing(function ($record) {
-                        return max($record->total_amount - $record->amount_paid, 0); // Calculate dynamically
-                    }),
+
 
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Status')
@@ -285,13 +298,34 @@ class PaymentResource extends Resource
                         'success' => 'paid',     // Paid in green
                     ]),
                 Tables\Columns\TextColumn::make('due_date'),
-                Tables\Columns\BadgeColumn::make('paymentMethod.method_name')
+
+
+               /* Tables\Columns\BadgeColumn::make('paymentMethod.method_name')
                     ->label('Payment Method')
                     ->colors([
                         'primary' => 'cash',    // Cash in primary color
                         'success' => 'card',    // Card in green
                         'warning' => 'check',   // Check in yellow
                     ]),
+
+                */
+                SelectColumn::make('payment_method_id')
+                    ->label('Payment Method')
+                    ->options([
+                        1 => 'Cash',   // Assuming 1 is the ID for Cash
+                        2 => 'Card',   // Assuming 2 is the ID for Card
+                        3 => 'Check',  // Assuming 3 is the ID for Check
+                    ])
+                    ->selectablePlaceholder(false) // Disables placeholder selection
+                    ->rules(['required']) // Validation rule
+                    ->beforeStateUpdated(function ($record, $state) {
+                        // Logic before updating the state
+                    })
+                    ->afterStateUpdated(function ($record, $state) {
+                        // Logic after updating the state
+                        $record->payment_method_id = $state;
+                        $record->save();
+                    }),
             ])
             ->filters([
                 // Filter by Payment Type

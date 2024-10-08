@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class Payment extends Model
 {
@@ -53,6 +54,20 @@ class Payment extends Model
     public static function boot()
     {
         parent::boot();
+        static::saving(function ($payment) {
+            if ($payment->total_amount < $payment->amount_paid) {
+                throw ValidationException::withMessages([
+                    'total_amount' => 'Total amount cannot be less than the amount already paid.',
+                ]);
+            }
+
+            // Recalculate amount_due and update status
+            $payment->amount_due = max($payment->total_amount - $payment->amount_paid, 0);
+            $payment->status = $payment->amount_paid >= $payment->total_amount
+                ? 'paid'
+                : ($payment->amount_paid > 0 ? 'partial' : 'unpaid');
+        });
+
 
         static::created(function ($payment) {
             $payment->adjustPaymentTotals('add', $payment->getAttributes());
