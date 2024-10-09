@@ -3,14 +3,17 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\PaymentResource\Pages;
+use App\Filament\Exports\PaymentExporter;
 use App\Filament\Widgets\PaymentStats;
 use App\Models\Payment;
 use App\Models\DivisionDeadline;
+use Filament\Actions\ExportAction;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Enums\FiltersLayout;
@@ -364,10 +367,13 @@ class PaymentResource extends Resource
             ],layout: FiltersLayout::AboveContent)
             ->actions([
                 Tables\Actions\EditAction::make(),
+
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
-            ]);
+                ExportBulkAction::make()
+                ->exporter(PaymentExporter::class)
+            ]) ;
     }
 
     public static function getPages(): array

@@ -2,11 +2,16 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StatsOverview extends BaseWidget
+
 {
+    use InteractsWithPageFilters;
+
+
     protected function getStats(): array
     {
         return [

@@ -5,16 +5,19 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\StudentResource\Pages;
 use App\Filament\Admin\Resources\StudentResource\RelationManagers;
+use App\Filament\Exports\StudentExporter;
 use App\Models\DivisionDeadline;
 use App\Models\Payment;
 use App\Models\PaymentTotal;
 use App\Models\PaymentType;
 use App\Models\Student;
 use Carbon\Carbon;
+use Filament\Actions\ExportAction;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
@@ -227,6 +230,7 @@ class StudentResource extends Resource
 
         // Merge static and dynamic columns
         return $table
+
             ->columns(array_merge($staticColumns, $dynamicColumns))
             ->filters([
                 Filter::make('payments_today')
@@ -243,10 +247,14 @@ class StudentResource extends Resource
                 ],layout: FiltersLayout::AboveContent) // Add the filter for payments made today
 
                 ->actions([
+
                 Tables\Actions\EditAction::make(),
+
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
+                ExportBulkAction::make()
+                    ->exporter(StudentExporter::class)
             ]);
     }
 
