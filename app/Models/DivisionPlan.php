@@ -17,6 +17,7 @@ class DivisionPlan extends Model
         return $this->hasMany(DivisionDeadline::class);
     }
 
+
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);

@@ -19,6 +19,7 @@ class Student extends Model
         'phone_number',
         'cassier_id',
         'cassier_expiration',
+        'external',
     ];
 
     public function parent(): BelongsTo

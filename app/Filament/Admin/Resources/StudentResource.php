@@ -55,6 +55,10 @@ class StudentResource extends Resource
                     ->nullable(),
                 Forms\Components\DatePicker::make('cassier_expiration')->nullable(),
                 Forms\Components\TextInput::make('address')->required(),
+                Forms\Components\Toggle::make('external')
+                    ->label('Is External')
+                    ->default(false),
+
                 // Payments Repeater (Full Width)
                 Forms\Components\Repeater::make('payments')
                     ->relationship('payments')
@@ -215,13 +219,26 @@ class StudentResource extends Resource
             return TextColumn::make("payment_type_{$paymentType->id}_total")
                 ->label($paymentType->name)
                 ->getStateUsing(function ($record) use ($paymentType) {
+                    // Check if the student is external
+                    if ($record->external) {
+                        // If it's the 'Resturant' payment type, show an icon or "N/A" for external students
+                        if ($paymentType->name === 'Ecolage') {
+                            return 'N/A'; // You can also use an icon here
+                        }
+                    }
+
                     // Fetch the pre-calculated total from the payment_totals table
                     $paymentTotal = PaymentTotal::where('student_id', $record->id)
                         ->where('payment_type_id', $paymentType->id)
                         ->value('total_amount');
+
                     return $paymentTotal ? number_format($paymentTotal, 2) : '0.00';
-                });
+                })
+                ->formatStateUsing(fn($state) => $state === 'N/A' ? 'N/A' : $state) // Optionally format 'N/A'
+                ->icon(fn($state) => $state === 'N/A' ? 'heroicon-o-x-circle' : null) // Optionally add an icon
+                ->iconPosition('after'); // Display the icon after the text
         })->toArray();
+
 
         // Define filters
         $filters = [
@@ -233,6 +250,7 @@ class StudentResource extends Resource
 
             ->columns(array_merge($staticColumns, $dynamicColumns))
             ->filters([
+
                 Filter::make('payments_today')
                     ->label('Payments Today')
                     ->query(function (Builder $query) {

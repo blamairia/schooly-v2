@@ -34,6 +34,10 @@ class StudentExporter extends Exporter
                 ->state(fn (Student $record) => "{$record->first_name} {$record->last_name}"),
             ExportColumn::make('classAssigned.name')->label('Class Assigned'),
             ExportColumn::make('cassier.number')->label('Cassier Number'),
+            ExportColumn::make('external')
+            ->label('External')
+            ->formatStateUsing(fn ($state) => $state ? 'Yes' : 'No'),
+
         ];
 
         // Add dynamic columns for each payment type

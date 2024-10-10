@@ -27,6 +27,7 @@ use App\Filament\Admin\Resources\PaymentResource\Widgets;
 class PaymentResource extends Resource
 {
     protected static ?string $model = Payment::class;
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
 
     public static function form(Form $form): Form
     {
