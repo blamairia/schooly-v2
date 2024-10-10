@@ -24,7 +24,9 @@
         "leandrocfe/filament-apex-charts": "3.1",
         "livewire/livewire": "^3.0",
         "oriondevelops/filament-greeter": "^0.2.0",
+        "pxlrbt/filament-activity-log": "^1.1",
         "shuvroroy/filament-spatie-laravel-backup": "^2.2",
+        "spatie/laravel-activitylog": "^4.8",
         "spatie/laravel-backup": "^9.1",
         "webbingbrasil/filament-advancedfilter": "3.0"
     },

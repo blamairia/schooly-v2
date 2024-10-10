@@ -365,9 +365,12 @@ class PaymentResource extends Resource
                     ->query(function ($query) {
                         return $query->whereDate('created_at', today());
                     }),
+
             ],layout: FiltersLayout::AboveContent)
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('activities')->url(fn($record) => PaymentResource::getUrl('activities', ['record' => $record])),
+
 
             ])
             ->bulkActions([
@@ -377,12 +380,15 @@ class PaymentResource extends Resource
             ]) ;
     }
 
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListPayments::route('/'),
             'create' => Pages\CreatePayment::route('/create'),
             'edit' => Pages\EditPayment::route('/{record}/edit'),
+            'activities' => Pages\PaymentLogPage::route('/{record}/activities'),
+
         ];
     }
 

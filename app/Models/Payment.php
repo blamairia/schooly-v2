@@ -6,9 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Payment extends Model
 {
+    use LogsActivity;
     protected $fillable = [
         'student_id',
         'payment_type_id',
@@ -49,6 +52,11 @@ class Payment extends Model
     {
         return $this->belongsTo(PaymentMethod::class);
     }
+    public function getActivitylogOptions(): LogOptions
+{
+    return LogOptions::defaults()
+        ->logFillable();
+}
 
     // Automatically boot the model to handle created, updated, and deleted events
     public static function boot()

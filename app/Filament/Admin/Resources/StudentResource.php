@@ -21,6 +21,7 @@ use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -251,6 +252,7 @@ class StudentResource extends Resource
             ->columns(array_merge($staticColumns, $dynamicColumns))
             ->filters([
 
+
                 Filter::make('payments_today')
                     ->label('Payments Today')
                     ->query(function (Builder $query) {
@@ -262,9 +264,14 @@ class StudentResource extends Resource
                         // Apply the filter by student IDs
                         $query->whereIn('id', $studentIdsWithPaymentsToday);
                     }),
+
+
+
+
                 ],layout: FiltersLayout::AboveContent) // Add the filter for payments made today
 
                 ->actions([
+                Tables\Actions\Action::make('activities')->url(fn($record) => StudentResource::getUrl('activities', ['record' => $record])),
 
                 Tables\Actions\EditAction::make(),
 
@@ -286,6 +293,7 @@ class StudentResource extends Resource
             'index' => Pages\ListStudents::route('/'),
             'create' => Pages\CreateStudent::route('/create'),
             'edit' => Pages\EditStudent::route('/{record}/edit'),
+            'activities' => Pages\StudentLogPage::route('/{record}/activities'),
         ];
     }
 }

@@ -4,9 +4,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Student extends Model
 {
+    use LogsActivity;
     protected $fillable = [
         'first_name',
         'last_name',
@@ -55,6 +58,12 @@ class Student extends Model
         ->sum('amount_paid'); // Assuming you want to sum the paid amount
 
     return $paymentTotal;
+}
+
+public function getActivitylogOptions(): LogOptions
+{
+    return LogOptions::defaults()
+        ->logFillable();
 }
 
     public function cassier(): BelongsTo
