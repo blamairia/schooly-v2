@@ -18,6 +18,8 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextInputColumn;
@@ -25,6 +27,7 @@ use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
 use App\Filament\Admin\Resources\PaymentResource\Widgets;
@@ -377,13 +380,26 @@ class PaymentResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('activities')->url(fn($record) => PaymentResource::getUrl('activities', ['record' => $record])),
-
+                Action::make('print')
+                ->label('Print Receipt')
+                ->url(fn (Payment $record) => route('payments.print', ['payment' => $record->id]))
+                ->openUrlInNewTab(),
 
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
                 ExportBulkAction::make()
-                ->exporter(PaymentExporter::class)
+                ->exporter(PaymentExporter::class),
+                BulkAction::make('printReceipts')
+    ->label('Print Receipts')
+    ->action(function (Collection $records) {
+        // Extract IDs from the collection of records
+        $recordIds = $records->pluck('id')->toArray();
+
+        // Redirect to the bulk print route with the IDs
+        return redirect()->route('print.bulk.receipts', ['paymentIds' => $recordIds]);
+    })
+    ->requiresConfirmation(),
             ]) ;
     }
 

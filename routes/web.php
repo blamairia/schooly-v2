@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PaymentReceiptController;
 
 /*
 |--------------------------------------------------------------------------
@@ -12,6 +13,14 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+
+Route::get('payments/{payment}/print', action: [PaymentReceiptController::class, 'printReceipt'])->name('payments.print');
+Route::get('/print/bulk-receipts', [PaymentReceiptController::class, 'printBulkReceipts'])
+    ->name('print.bulk.receipts');
+
+
+// routes/web.php
 
 Route::get('/', function () {
     return view('welcome');
