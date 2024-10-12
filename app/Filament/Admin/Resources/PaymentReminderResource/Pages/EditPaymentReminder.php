@@ -3,17 +3,22 @@
 namespace App\Filament\Admin\Resources\PaymentReminderResource\Pages;
 
 use App\Filament\Admin\Resources\PaymentReminderResource;
-use Filament\Actions;
+use App\Filament\Admin\Resources\PaymentResource;
 use Filament\Resources\Pages\EditRecord;
 
 class EditPaymentReminder extends EditRecord
 {
     protected static string $resource = PaymentReminderResource::class;
 
-    protected function getHeaderActions(): array
+    public function mount($record): void
     {
-        return [
-            Actions\DeleteAction::make(),
-        ];
+        parent::mount($record);
+
+        // Perform the auto-redirect to the payment edit page
+        $paymentId = $this->record->id;
+
+        // Redirect to the payments edit page using PaymentResource::getUrl
+        redirect()->to(PaymentResource::getUrl('edit', ['record' => $paymentId]));
     }
 }
+

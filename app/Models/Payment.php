@@ -26,6 +26,9 @@ class Payment extends Model
         'due_date',
         'payment_method_id', // Use payment_method_id for the relationship with PaymentMethod
     ];
+    protected $casts = [
+        'due_date' => 'datetime', // Cast due_date as a Carbon instance
+    ];
 
     // Define relationships
     public function divisionPlan(): BelongsTo
