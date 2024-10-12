@@ -271,6 +271,20 @@ class StudentResource extends Resource
                 ],layout: FiltersLayout::AboveContent) // Add the filter for payments made today
 
                 ->actions([
+
+                Tables\Actions\Action::make('printReceipts')
+                    ->label('Print Receipts')
+                    ->url(function (Student $record): string {
+                        // Gather payment IDs for the selected student
+                        $paymentIds = Payment::where('student_id', $record->id)->pluck('id')->toArray();
+
+                        // Return the URL to the bulk print route with payment IDs
+                        return route('print.bulk.receipts', ['paymentIds' => $paymentIds]);
+                    })
+                    ->openUrlInNewTab()
+                    ->icon('heroicon-o-printer')
+                    ->disabled(fn (Student $record): bool => Payment::where('student_id', $record->id)->doesntExist()),
+
                 Tables\Actions\Action::make('activities')->url(fn($record) => StudentResource::getUrl('activities', ['record' => $record])),
 
                 Tables\Actions\EditAction::make(),

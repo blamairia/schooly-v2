@@ -378,12 +378,14 @@ class PaymentResource extends Resource
 
             ],layout: FiltersLayout::AboveContent)
             ->actions([
+                Action::make('print')
+                    ->icon('heroicon-o-printer')
+                    ->label('Print Receipt')
+                    ->url(fn (Payment $record) => route('payments.print', ['payment' => $record->id]))
+                    ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('activities')->url(fn($record) => PaymentResource::getUrl('activities', ['record' => $record])),
-                Action::make('print')
-                ->label('Print Receipt')
-                ->url(fn (Payment $record) => route('payments.print', ['payment' => $record->id]))
-                ->openUrlInNewTab(),
+
 
             ])
             ->bulkActions([

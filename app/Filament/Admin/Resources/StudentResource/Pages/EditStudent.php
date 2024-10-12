@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Filament\Admin\Resources\StudentResource\Pages;
 
 use App\Filament\Admin\Resources\StudentResource;
@@ -52,7 +53,31 @@ class EditStudent extends EditRecord
     {
         return [
             Actions\DeleteAction::make(),
-        ];
+
+            // Add Print Receipts Action
+             // Add Print Receipts Action
+             Actions\Action::make('printReceipts')
+                ->label('Print Receipts')
+                ->icon('heroicon-o-printer')
+                ->url(function () {
+                    // Gather payment IDs for the current student
+                    $paymentIds = Payment::where('student_id', $this->record->id)->pluck('id')->toArray();
+
+                    // If there are no payments, show a notification
+                    if (empty($paymentIds)) {
+                        Notification::make()
+                            ->title('No payments available for this student.')
+                            ->warning()
+                            ->send();
+                        return null;
+                    }
+
+                    // Generate the URL for bulk print
+                    return route('print.bulk.receipts', ['paymentIds' => $paymentIds]);
+                })
+                ->openUrlInNewTab(),
+
+
+            ];
     }
 }
-
