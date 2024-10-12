@@ -2,6 +2,9 @@
 
 namespace App\Console;
 
+use App\Models\Payment;
+use App\Models\User;
+use App\Notifications\PaymentReminderNotification;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -19,6 +22,15 @@ class Kernel extends ConsoleKernel
         // Second backup at 3:30 AM
         $schedule->command('backup:clean')->dailyAt('03:00');
         $schedule->command('backup:run')->dailyAt('03:30');
+
+        $schedule->call(function () {
+            $duePaymentsCount = Payment::flaggedPayments()->count();
+
+            // Create a notification for the admin user
+            \Filament\Notifications\Notification::route('database', 'admin')
+                ->notify(new PaymentReminderNotification($duePaymentsCount));
+
+        })->dailyAt('12:30');
     }
 
 
