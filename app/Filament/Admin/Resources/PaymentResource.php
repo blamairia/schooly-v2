@@ -4,13 +4,18 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\PaymentResource\Pages;
 use App\Filament\Exports\PaymentExporter;
+use App\Filament\Widgets\MonthlyPaymentStatsWidget;
+use App\Filament\Widgets\PaymentRemindersWidget;
 use App\Filament\Widgets\PaymentStats;
+use App\Filament\Widgets\TodaysPaymentStatsWidget;
+use App\Filament\Widgets\WeeklyPaymentStatsWidget;
 use App\Models\Payment;
 use App\Models\DivisionDeadline;
 use Filament\Actions\ExportAction;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Filament\Pages\Concerns\ExposesTableToWidgets;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ExportBulkAction;
@@ -28,6 +33,8 @@ class PaymentResource extends Resource
 {
     protected static ?string $model = Payment::class;
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+
+    use ExposesTableToWidgets;
 
     public static function form(Form $form): Form
     {
@@ -395,12 +402,16 @@ class PaymentResource extends Resource
     public static function getWidgets(): array {
         return [
             PaymentStats::class,
+            TodaysPaymentStatsWidget::class,
+            WeeklyPaymentStatsWidget::class,
+            MonthlyPaymentStatsWidget::class,
+            PaymentRemindersWidget::class,
         ];
     }
-    protected function getHeaderWidgets(): array {
-        return [
-            PaymentStats::class,
-        ];
+
+
+    protected function getFooterWidgets(): array {
+        return [PaymentRemindersWidget::class];
     }
 
 }
