@@ -8,6 +8,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rule;
 
 class CassierResource extends Resource
 {
@@ -19,7 +20,17 @@ class CassierResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('number')->required(),
+                // Add validation rule for uniqueness
+                Forms\Components\TextInput::make('number')
+                    ->required()
+                    ->label('Cassier Number')
+                    ->unique(
+                        table: Cassier::class,
+                        column: 'number',
+                        ignoreRecord: true // Ensure the current record being edited is ignored
+                    )
+                    ->numeric() // Assuming cassier numbers are numeric, you can remove this if not needed
+                    ->rules(['max:255']), // Add other rules as needed
 
                 Forms\Components\Select::make('student_id')
                     ->relationship('student', 'first_name')

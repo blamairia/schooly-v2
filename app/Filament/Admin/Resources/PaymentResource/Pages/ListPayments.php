@@ -4,11 +4,9 @@ namespace App\Filament\Admin\Resources\PaymentResource\Pages;
 
 use App\Filament\Admin\Resources\PaymentResource;
 use App\Filament\Widgets\AllTimePaymentStatsWidget;
-use App\Filament\Widgets\PaymentRemindersWidget;
+use App\Filament\Widgets\PaymentStatss;
 use App\Filament\Widgets\TodaysPaymentStatsWidget;
 use App\Filament\Widgets\WeeklyPaymentStatsWidget;
-use App\Filament\Widgets\MonthlyPaymentStatsWidget;
-use App\Filament\Widgets\PaymentStats;
 use Filament\Actions;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
@@ -25,34 +23,12 @@ class ListPayments extends ListRecords
         ];
     }
 
-    public static function getWidgets(): array {
-        return [
-            PaymentStats::class,
-            TodaysPaymentStatsWidget::class,
-            WeeklyPaymentStatsWidget::class,
-            MonthlyPaymentStatsWidget::class,
-            PaymentRemindersWidget::class,
-        ];
-    }
+
 
 
 
     // Function to dynamically return the correct widget based on the active tab
-    protected function getHeaderWidgets(): array {
 
-        $activeTab = $this->getActiveTab();
-
-        switch ($activeTab) {
-            case 'Today':
-                return [TodaysPaymentStatsWidget::class];
-            case 'This Week':
-                return [WeeklyPaymentStatsWidget::class];
-            case 'This Month':
-                return [MonthlyPaymentStatsWidget::class];
-            default: // For 'All' tab and other cases
-                return [PaymentStats::class];
-        }
-    }
 
     // Method to get the active tab
     protected function getActiveTab(): string {
@@ -74,7 +50,5 @@ class ListPayments extends ListRecords
         ];
     }
 
-    protected function getFooterWidgets(): array {
-        return [PaymentRemindersWidget::class];
-    }
+
 }

@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Models\PaymentTotal;
 use App\Models\PaymentType;
 use App\Models\Student;
+use App\Models\StudyClass;
 use Carbon\Carbon;
 use Filament\Actions\ExportAction;
 use Filament\Forms;
@@ -44,7 +45,32 @@ class StudentResource extends Resource
                 Forms\Components\Select::make('parent_id')
                     ->relationship('parent', 'first_name') // This line initializes the relationship
                     ->getOptionLabelFromRecordUsing(fn($record) => "{$record->first_name} {$record->last_name}") // Concatenate first and last names
-                    ->required(),
+                    ->getSearchResultsUsing(function (string $query) {
+                        return \App\Models\Parents::whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$query}%"])
+                            ->get()
+                            ->mapWithKeys(function ($parent) {
+                                return [$parent->id => "{$parent->first_name} {$parent->last_name}"];
+                            });
+                    })
+                    ->required()
+                    ->editOptionForm([ // This allows editing the selected parent
+                        Forms\Components\TextInput::make('first_name')->required(),
+                        Forms\Components\TextInput::make('last_name')->required(),
+                        Forms\Components\DatePicker::make('birth_date')->required(),
+                        Forms\Components\TextInput::make('birth_place')->required(),
+                        Forms\Components\TextInput::make('phone_number')->required(),
+                        Forms\Components\TextInput::make('address')->required(),
+                        Forms\Components\TextInput::make('email')->email()->required(),
+                    ])
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('first_name')->required(),
+                        Forms\Components\TextInput::make('last_name')->required(),
+                        Forms\Components\DatePicker::make('birth_date')->required(),
+                        Forms\Components\TextInput::make('birth_place')->required(),
+                        Forms\Components\TextInput::make('phone_number')->required(),
+                        Forms\Components\TextInput::make('address')->required(),
+                        Forms\Components\TextInput::make('email')->email()->required(),
+                    ]),
                 Forms\Components\Select::make('class_assigned_id')
                     ->relationship('classAssigned', 'name')
                     ->required(),
@@ -53,8 +79,30 @@ class StudentResource extends Resource
                     ->required(),
                 Forms\Components\Select::make('cassier_id')
                     ->relationship('cassier', 'number')
-                    ->nullable(),
-                Forms\Components\DatePicker::make('cassier_expiration')->nullable(),
+                    ->nullable()
+                    ->searchable()
+                    ->preload() // Preload the options for the select dropdown
+                    ->options(function () {
+                        return \App\Models\Cassier::where('is_rented', false) // Only show cassiers that are not rented
+                            ->orderBy('number', 'asc') // Sort by the "number" attribute
+                            ->paginate(10) // Show 10 at a time (Laravel pagination)
+                            ->pluck('number', 'id'); // Return the 'number' for display and 'id' for the value
+                    })
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('number')
+                            ->required()
+                            ->label('Cassier Number'),
+                        Forms\Components\Toggle::make('is_rented')
+                            ->default(false)
+                            ->label('Is Rented')
+                            ->required(),
+                    ])
+
+                    ->getOptionLabelFromRecordUsing(fn($record) => "Cassier #{$record->number}"), // Display cassier number in the dropdown
+
+                Forms\Components\DatePicker::make('cassier_expiration')
+                    ->nullable()
+                    ->default('2025-06-20'), // Set default date to 20th June 2025
                 Forms\Components\TextInput::make('address')->required(),
                 Forms\Components\Toggle::make('external')
                     ->label('Is External')
@@ -127,40 +175,45 @@ class StudentResource extends Resource
                                 // Total Amount
 
                                 Forms\Components\TextInput::make('total_amount')
-                                        ->label('Total Amount')
-                                        ->numeric()
-                                        ->required()
-                                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                            // Perform calculations here but don’t reset the value in real-time
-                                            $amountPaid = $get('amount_paid') ?? 0;
-                                            $amountDue = max($state - $amountPaid, 0);
+                                    ->label('Total Amount')
+                                    ->numeric() // Enforce numeric input
+                                    ->required()
 
-                                            // Just update amount_due
-                                            $set('amount_due', $amountDue);
-                                        })
-                                        ->debounce(500), // Add a debounce time
+                                    ->debounce(500) // React when the value changes
+                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                        $amountPaid = $get('amount_paid') ?? 0;
+                                        $amountDue = $state - $amountPaid;
 
+                                        // Ensure amount_due is not negative
+                                        $set('amount_due', max($amountDue, 0));
+                                    }),
 
-                                    Forms\Components\TextInput::make('amount_paid')
-                                        ->label('Amount Paid')
-                                        ->numeric()
-                                        ->default(0)
-                                        ->reactive()
-                                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                            $totalAmount = $get('total_amount') ?? 0;
+                                Forms\Components\TextInput::make('amount_paid')
+                                    ->label('Amount Paid')
+                                    ->numeric() // Enforce numeric input
+                                    ->default(0)
 
-                                            // Update only if paid amount is valid
-                                            if ($state > 0 && $state <= $totalAmount) {
-                                                $set('amount_due', $totalAmount - $state);
-                                            }
-                                        }),
+                                    ->debounce(500)// React when the value changes
+                                    ->extraInputAttributes(['min' => 0]) // Prevent negative input in the UI
+                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                        $totalAmount = $get('total_amount') ?? 0;
+                                        $amountDue = $totalAmount - $state;
 
+                                        // Ensure the paid amount does not exceed total amount and update amount_due
+                                        if ($state > $totalAmount) {
+                                            $set('amount_paid', $totalAmount);
+                                            $set('amount_due', 0); // Set amount_due to 0 when total is paid
+                                        } else {
+                                            $set('amount_due', max($amountDue, 0)); // Ensure no negative amount_due
+                                        }
+                                    }),
 
-                                // Amount Due (Hidden)
                                 Forms\Components\TextInput::make('amount_due')
+                                    ->label('Amount Due')
                                     ->numeric()
-                                    ->dehydrateStateUsing(fn ($state) => $state)
-                                    ->required(),
+                                    ->reactive()
+                                    ->required()
+                                    ->dehydrated(false),
 
 
                                 // Payment Method
@@ -264,6 +317,12 @@ class StudentResource extends Resource
                         // Apply the filter by student IDs
                         $query->whereIn('id', $studentIdsWithPaymentsToday);
                     }),
+                    // Class Assigned Filter Dropdown
+                   SelectFilter::make('classAssigned')
+                    ->relationship('classAssigned', 'name')
+                    ->label('Class Assigned')
+                    ->placeholder('Select a Class'),
+
 
 
 

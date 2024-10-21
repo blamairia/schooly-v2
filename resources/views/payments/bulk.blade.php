@@ -19,12 +19,14 @@
         }
 
         .page {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            padding: 5mm;
-            box-sizing: border-box;
-        }
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                padding: 5mm;
+                box-sizing: border-box;
+                page-break-after: always; /* Ensure page break after each .page */
+            }
+
 
         .recu {
             flex: 1;
@@ -69,9 +71,13 @@
         }
 
         .qrcode {
-            text-align: center;
-            margin-top: 3mm;
-        }
+        display: flex;                /* Use Flexbox for centering */
+        justify-content: center;       /* Center horizontally */
+        align-items: center;           /* Center vertically */
+        height: 86px;                 /* Adjust height as needed */
+        margin-top: 3mm;               /* Keep the existing margin */
+    }
+
 
         .pied-de-page {
             text-align: center;
@@ -122,10 +128,12 @@
             });
 
             @endforeach
-            window.print();
             setTimeout(() => {
-                window.close();
-            }, 500);
+                window.print();
+                setTimeout(() => {
+                    window.close();
+                }, 500);
+            }, 3000);
         }
     </script>
 </head>

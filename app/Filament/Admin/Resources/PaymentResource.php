@@ -4,10 +4,7 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\PaymentResource\Pages;
 use App\Filament\Exports\PaymentExporter;
-use App\Filament\Widgets\MonthlyPaymentStatsWidget;
-use App\Filament\Widgets\PaymentRemindersWidget;
-use App\Filament\Widgets\PaymentStats;
-use App\Filament\Widgets\TodaysPaymentStatsWidget;
+use App\Filament\Widgets\PaymentStatss;
 use App\Filament\Widgets\WeeklyPaymentStatsWidget;
 use App\Models\Payment;
 use App\Models\DivisionDeadline;
@@ -31,6 +28,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
 use App\Filament\Admin\Resources\PaymentResource\Widgets;
+use App\Filament\Widgets\TodaysPaymentStatsWidget;
 
 class PaymentResource extends Resource
 {
@@ -297,7 +295,7 @@ class PaymentResource extends Resource
                     ->label('Amount Due')
                     ->rules(['required', 'numeric'])
                     ->disabled() // Prevent editing this field
-                    ->getStateUsing(function ($record) {
+                    ->updateStateUsing(function ($record) {
                         return max($record->total_amount - $record->amount_paid, 0); // Calculate dynamically
                     }),
 
@@ -417,19 +415,9 @@ class PaymentResource extends Resource
         ];
     }
 
-    public static function getWidgets(): array {
-        return [
-            PaymentStats::class,
-            TodaysPaymentStatsWidget::class,
-            WeeklyPaymentStatsWidget::class,
-            MonthlyPaymentStatsWidget::class,
-            PaymentRemindersWidget::class,
-        ];
-    }
 
 
-    protected function getFooterWidgets(): array {
-        return [PaymentRemindersWidget::class];
-    }
+
+
 
 }
