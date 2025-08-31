@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\DivisionDeadline;
 use App\Observers\DivisionDeadlineObserver;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         //
         DivisionDeadline::observe(DivisionDeadlineObserver::class);
+        Schema::defaultStringLength(191);
 
     }
 }
