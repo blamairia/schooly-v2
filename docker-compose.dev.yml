@@ -1,0 +1,21 @@
+version: '3.8'
+
+# Docker Compose override file for manual development setup
+# Use this if you want to run the container manually like: docker-compose -f docker-compose.dev.yml up
+# This gives you a bash shell instead of auto-starting the Laravel server
+
+services:
+  app:
+    build: .
+    volumes:
+      - ./:/var/www/html:cached
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+    tty: true
+    stdin_open: true
+    command: bash
+    # Override the automatic setup command from main docker-compose.yml
+    # Users will need to run setup scripts manually

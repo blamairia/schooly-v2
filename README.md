@@ -26,6 +26,23 @@ docker-compose up
 # Access the application at http://localhost:8000
 ```
 
+### Manual Development with Docker Compose
+
+If you prefer a manual setup workflow similar to `docker run`, use the development compose file:
+
+```bash
+# Start the container with bash shell (no auto-setup)
+docker-compose -f docker-compose.dev.yml up
+
+# In another terminal, enter the container
+docker-compose -f docker-compose.dev.yml exec app bash
+
+# Inside the container, run setup scripts
+./scripts/dev-check.sh    # Check environment
+./scripts/dev-setup.sh    # Set up application  
+./scripts/dev-start.sh    # Start server
+```
+
 ### Manual Docker Setup
 
 If you prefer to run the container manually:
