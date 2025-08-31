@@ -13,7 +13,8 @@ return new class() extends Migration
     {
         Schema::create('failed_import_rows', function (Blueprint $table) {
             $table->id();
-            $table->json('data');
+            // Some MariaDB versions don't support JSON type — store as longText and keep JSON encoded content.
+            $table->longText('data')->comment('JSON payload stored as text');
             $table->foreignId('import_id')->constrained()->cascadeOnDelete();
             $table->text('validation_error')->nullable();
             $table->timestamps();

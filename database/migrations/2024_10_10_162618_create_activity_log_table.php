@@ -14,7 +14,8 @@ class CreateActivityLogTable extends Migration
             $table->text('description');
             $table->nullableMorphs('subject', 'subject');
             $table->nullableMorphs('causer', 'causer');
-            $table->json('properties')->nullable();
+            // Some MariaDB versions do not support JSON column type — store JSON payload as longText
+            $table->longText('properties')->nullable()->comment('JSON payload stored as text');
             $table->timestamps();
             $table->index('log_name');
         });
