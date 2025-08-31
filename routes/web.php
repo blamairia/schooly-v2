@@ -20,8 +20,7 @@ Route::get('/print/bulk-receipts', [PaymentReceiptController::class, 'printBulkR
     ->name('print.bulk.receipts');
 
 
-// routes/web.php
-
+// root
 Route::get('/', function () {
     return view('welcome');
 });
