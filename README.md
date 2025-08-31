@@ -1,4 +1,6 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Schooly v2
+
+A modern school management system built with Laravel and Filament.
 
 <p align="center">
 <a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
@@ -6,6 +8,106 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
+
+## 🚀 Docker Development Setup
+
+### Quick Start with Docker Compose (Recommended)
+
+The easiest way to get started is with Docker Compose, which automatically sets up the database and application:
+
+```bash
+# Clone the repository
+git clone https://github.com/blamairia/schooly-v2.git
+cd schooly-v2
+
+# Start the application with Docker Compose
+docker-compose up
+
+# Access the application at http://localhost:8000
+```
+
+### Manual Docker Setup
+
+If you prefer to run the container manually:
+
+1. **Build the Docker image:**
+   ```bash
+   docker build -t schooly-v2-app .
+   ```
+
+2. **Run the container:**
+   ```bash
+   # On Windows:
+   docker run --name schooly-v2-app-dev --rm -it -v C:\path\to\schooly-v2:/var/www/html -p 8000:8000 schooly-v2-app bash
+   
+   # On Mac/Linux:
+   docker run --name schooly-v2-app-dev --rm -it -v $(pwd):/var/www/html -p 8000:8000 schooly-v2-app bash
+   ```
+
+3. **Inside the container, set up the application:**
+   ```bash
+   # First, check if the environment is ready (optional)
+   ./scripts/dev-check.sh
+   
+   # Run the setup script to install dependencies and configure the app
+   ./scripts/dev-setup.sh
+   
+   # Start the Laravel development server
+   ./scripts/dev-start.sh
+   ```
+
+4. **Access the application:**
+   Open your browser to [http://localhost:8000](http://localhost:8000)
+
+### Manual Setup Steps
+
+If you prefer to run the setup steps manually:
+
+```bash
+# Copy environment file
+cp .env.example .env
+
+# Install PHP dependencies
+composer install
+
+# Generate application key
+php artisan key:generate
+
+# Install and build frontend assets
+npm install
+npm run build
+
+# Set up database (if database is available)
+php artisan migrate
+php artisan db:seed --class=PaymentMethodsSeeder
+
+# Start the development server
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+## 🛠️ Troubleshooting
+
+### Common Issues
+
+**Problem: "docker: Error response from daemon: No such image: schooly-v2-app"**
+- Solution: Build the Docker image first: `docker build -t schooly-v2-app .`
+
+**Problem: Cannot access the application on localhost:8000**
+- Make sure you used the correct port mapping: `-p 8000:8000`
+- Check if another service is using port 8000: `netstat -an | grep 8000`
+
+**Problem: Database connection errors**
+- If using Docker manually, you need to set up a database separately or use docker-compose
+- Update your `.env` file with correct database credentials
+
+**Problem: Permission denied for scripts**
+- Make sure scripts are executable: `chmod +x scripts/*.sh`
+
+### Development Scripts
+
+- `./scripts/dev-check.sh` - Check if environment has all required tools
+- `./scripts/dev-setup.sh` - Set up Laravel application (install dependencies, generate keys, etc.)
+- `./scripts/dev-start.sh` - Start Laravel development server
 
 ## About Laravel
 
