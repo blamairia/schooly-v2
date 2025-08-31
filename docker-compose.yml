@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: schooly
+      MYSQL_USER: schooly
+      MYSQL_PASSWORD: secret
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  app:
+    build: .
+    depends_on:
+      - db
+    volumes:
+      - ./:/var/www/html:cached
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: schooly
+      DB_USERNAME: schooly
+      DB_PASSWORD: secret
+    tty: true
+    command: bash -lc "\
+      composer install --no-interaction --prefer-dist || true && \
+      npm install --no-audit --no-progress || true && \
+      npm run build 2>/dev/null || true && \
+      php artisan key:generate --ansi || true && \
+      php artisan migrate --force || true && \
+      php artisan db:seed --class=PaymentMethodsSeeder || true && \
+      php artisan serve --host=0.0.0.0 --port=8000"
+
+volumes:
+  dbdata:
