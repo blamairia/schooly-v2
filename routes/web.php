@@ -20,9 +20,9 @@ Route::get('/print/bulk-receipts', [PaymentReceiptController::class, 'printBulkR
     ->name('print.bulk.receipts');
 
 
-// root
+// root - redirect to admin panel
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/admin');
 });
 
 Route::middleware([
