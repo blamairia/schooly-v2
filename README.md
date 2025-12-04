@@ -130,8 +130,12 @@ chown -R www-data:www-data storage bootstrap/cache
 
 ### Accessing the Application
 
-- **Main Application:** http://localhost:8080
-- **Admin Panel:** http://localhost:8080/admin
+- **Main Application (Subdomain):** http://schooly.localhost
+- **Admin Panel (Subdomain):** http://schooly.localhost/admin
+- **Direct Access (Port 8080):** http://localhost:8080
+- **Admin Panel (Direct):** http://localhost:8080/admin
+
+**Note:** The subdomain `schooly.localhost` is configured in `/etc/hosts` to resolve to `127.0.0.1`. This provides a cleaner URL structure.
 
 ### Default Credentials
 
