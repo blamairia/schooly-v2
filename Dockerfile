@@ -7,11 +7,14 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+  && chmod +x /usr/local/bin/composer
 
 # Install Node.js (LTS 20) and npm
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+RUN curl -fsSL --insecure https://deb.nodesource.com/setup_20.x | bash - \
+  && apt-get update \
   && apt-get install -y nodejs \
+  && npm install -g npm@latest \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www/html
