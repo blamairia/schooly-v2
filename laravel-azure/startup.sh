@@ -26,6 +26,15 @@ service nginx restart
 # Start supervisor
 service supervisor start
 
+# Create required Laravel directories
+mkdir -p /home/site/wwwroot/bootstrap/cache
+mkdir -p /home/site/wwwroot/storage/framework/cache
+mkdir -p /home/site/wwwroot/storage/framework/sessions
+mkdir -p /home/site/wwwroot/storage/framework/views
+mkdir -p /home/site/wwwroot/storage/logs
+chmod -R 775 /home/site/wwwroot/storage
+chmod -R 775 /home/site/wwwroot/bootstrap/cache
+
 # Run artisan commands
 php /home/site/wwwroot/artisan down --refresh=15
 
