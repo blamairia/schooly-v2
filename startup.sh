@@ -49,6 +49,12 @@ php artisan view:clear || true
 php artisan view:cache || true
 
 php artisan storage:link || true
+
+# Ensure Vite build assets are present (should be built before deployment)
+if [ ! -d "public/build" ]; then
+  echo "WARNING: public/build directory not found. Run 'npm run build' before deployment."
+fi
+
 php artisan up || true
 
 #######################################

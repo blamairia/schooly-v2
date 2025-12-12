@@ -15,6 +15,10 @@ server {
     index index.php;
  
     charset utf-8;
+ 
+    # Increase buffer sizes for PHP-FPM
+    fastcgi_buffers 16 16k;
+    fastcgi_buffer_size 32k;
 
     if ($http_x_arr_ssl = "") {
         return 301 https://$host$request_uri;
@@ -22,6 +26,14 @@ server {
  
     location / {
         try_files $uri $uri/ /index.php?$query_string;
+    }
+ 
+    # Serve Vite built assets with proper caching
+    location /build/ {
+        alias /home/site/wwwroot/public/build/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        access_log off;
     }
  
     location = /favicon.ico { access_log off; log_not_found off; }
