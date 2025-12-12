@@ -15,16 +15,23 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
+        $adminEmail = env('ADMIN_EMAIL', 'admin@example.com');
+        $adminPassword = env('ADMIN_PASSWORD', 'password');
+        $adminName = env('ADMIN_NAME', 'Administrator');
+
         // Don't create if a user with this email already exists
-        if (User::where('email', 'admin@example.com')->exists()) {
+        if (User::where('email', $adminEmail)->exists()) {
+            $this->command->info("Admin user already exists: {$adminEmail}");
             return;
         }
 
         User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@example.com',
+            'name' => $adminName,
+            'email' => $adminEmail,
             'email_verified_at' => Carbon::now(),
-            'password' => Hash::make('password'), // change this after first login
+            'password' => Hash::make($adminPassword),
         ]);
+
+        $this->command->info("Admin user created: {$adminEmail}");
     }
 }
