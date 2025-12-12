@@ -31,11 +31,13 @@ jobs:
 
       - name: Run composer install if composer.json exists
         if: steps.check_files.outputs.files_exists == 'true'
-        run: composer validate --no-check-publish && composer update --prefer-dist --no-progress --no-dev --optimize-autoloader
+        run: |
+          composer validate --no-check-publish
+          composer install --prefer-dist --no-progress --no-dev --optimize-autoloader --ignore-platform-reqs
 
-
-      - name : zip files
-        run: zip -r relaese.zip .*
+      - name: Create deployment package
+        run: |
+          zip -r release.zip . -x '*.git*' 'node_modules/*' 'tests/*' 'storage/logs/*' 'storage/framework/cache/*' 'storage/framework/sessions/*' 'storage/framework/views/*'
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -51,9 +53,7 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: php-app
-      - name: Unzip files
-        run: unzip relaese.zip 
+          name: php-app 
       
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
