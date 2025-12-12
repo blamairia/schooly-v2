@@ -15,8 +15,8 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        $adminEmail = env('ADMIN_EMAIL', 'admin@example.com');
-        $adminPassword = env('ADMIN_PASSWORD', 'password');
+        $adminEmail = env('ADMIN_EMAIL', 'admin@schooly.com');
+        $adminPassword = env('ADMIN_PASSWORD', 'admin');
         $adminName = env('ADMIN_NAME', 'Administrator');
 
         // Don't create if a user with this email already exists

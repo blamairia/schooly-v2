@@ -54,7 +54,7 @@
                     required 
                     autofocus 
                     autocomplete="username"
-                    placeholder="admin@example.com"
+                    placeholder="admin@schooly.com"
                     class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 transition-all duration-200" />
             </div>
 
@@ -107,11 +107,11 @@
             <div class="space-y-2 text-sm">
                 <div class="flex items-center justify-between py-2 px-3 bg-white rounded border border-blue-100">
                     <span class="text-gray-600 font-medium">Email:</span>
-                    <code class="text-blue-700 font-mono bg-blue-50 px-2 py-1 rounded">admin@example.com</code>
+                    <code class="text-blue-700 font-mono bg-blue-50 px-2 py-1 rounded">admin@schooly.com</code>
                 </div>
                 <div class="flex items-center justify-between py-2 px-3 bg-white rounded border border-blue-100">
                     <span class="text-gray-600 font-medium">Password:</span>
-                    <code class="text-blue-700 font-mono bg-blue-50 px-2 py-1 rounded">password</code>
+                    <code class="text-blue-700 font-mono bg-blue-50 px-2 py-1 rounded">admin</code>
                 </div>
             </div>
         </div>
