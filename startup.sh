@@ -34,6 +34,8 @@ mkdir -p \
   storage/logs \
   storage/app/public
 
+# Set ownership to nginx/PHP-FPM user (Azure uses www-data or nginx)
+chown -R www-data:www-data storage bootstrap/cache || chown -R nginx:nginx storage bootstrap/cache || true
 chmod -R 775 storage bootstrap/cache || true
 
 #######################################
@@ -64,6 +66,16 @@ php artisan up || true
 # Start PHP-FPM (REQUIRED)
 #######################################
 echo "Starting php-fpm"
-php-fpm
+php-fpm &
+
+# Wait for PHP-FPM to be ready
+sleep 3
+
+# Pre-warm the application to reduce cold start impact
+echo "Pre-warming application..."
+curl -s http://localhost:8080 > /dev/null 2>&1 || true
 
 echo "=== Azure Laravel startup DONE ==="
+
+# Keep container alive (required for Azure)
+tail -f /dev/null
