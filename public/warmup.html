@@ -40,17 +40,26 @@
         
         function checkServer() {
             attempts++;
-            fetch(window.location.origin, { method: 'HEAD' })
+            fetch(window.location.origin + '/login', { 
+                method: 'HEAD',
+                cache: 'no-cache'
+            })
                 .then(response => {
-                    if (response.ok || response.status !== 502) {
-                        window.location.reload();
+                    // Only redirect if we get a successful response (200-399)
+                    if (response.ok && response.status >= 200 && response.status < 400) {
+                        window.location.href = window.location.origin + '/login';
                     } else if (attempts < maxAttempts) {
                         setTimeout(checkServer, 2000);
+                    } else {
+                        // After max attempts, try to reload anyway
+                        window.location.reload();
                     }
                 })
                 .catch(() => {
                     if (attempts < maxAttempts) {
                         setTimeout(checkServer, 2000);
+                    } else {
+                        window.location.reload();
                     }
                 });
         }

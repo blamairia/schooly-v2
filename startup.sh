@@ -34,13 +34,25 @@ mkdir -p \
   storage/logs \
   storage/app/public
 
-# Set ownership to nginx/PHP-FPM user (Azure uses www-data or nginx)
-chown -R www-data:www-data storage bootstrap/cache || chown -R nginx:nginx storage bootstrap/cache || true
-chmod -R 775 storage bootstrap/cache || true
+# Set ownership to nginx/PHP-FPM user (Azure uses www-data)
+# The Azure container runs as www-data by default
+chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
+chown -R www-data:www-data storage/framework 2>/dev/null || true
+
+# Set proper permissions (775 for directories, 664 for files)
+find storage bootstrap/cache -type d -exec chmod 775 {} \; 2>/dev/null || true
+find storage bootstrap/cache -type f -exec chmod 664 {} \; 2>/dev/null || true
 
 #######################################
 # Laravel bootstrap
 #######################################
+# Verify session directory is writable before starting
+if [ ! -w "storage/framework/sessions" ]; then
+  echo "⚠️  Session directory not writable, fixing..."
+  chmod -R 775 storage/framework/sessions
+  chown -R www-data:www-data storage/framework/sessions 2>/dev/null || true
+fi
+
 php artisan cache:clear || true
 php artisan migrate --force || true
 
@@ -61,6 +73,16 @@ if [ ! -d "public/build" ]; then
 fi
 
 php artisan up || true
+
+#######################################
+# Final permission check (critical for sessions)
+#######################################
+echo "Ensuring storage permissions for PHP-FPM..."
+chown -R www-data:www-data storage 2>/dev/null || true
+chmod -R 775 storage 2>/dev/null || true
+
+# Specifically ensure session directory is writable
+chmod 777 storage/framework/sessions 2>/dev/null || true
 
 #######################################
 # Start PHP-FPM (REQUIRED)
