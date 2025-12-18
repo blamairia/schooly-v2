@@ -37,8 +37,8 @@ class PaymentsChart extends ApexChartWidget
             // Query payments for the last 3 months
             $payments = Payment::whereBetween('created_at', [$startOfThreeMonthsAgo, $endOfCurrentMonth])
                 ->selectRaw('MONTH(created_at) as month, SUM(amount_paid) as total_paid')
-                ->groupBy('month')
-                ->orderBy('month')
+                ->groupByRaw('MONTH(created_at)')
+                ->orderByRaw('MONTH(created_at)')
                 ->pluck('total_paid', 'month')
                 ->toArray();
 

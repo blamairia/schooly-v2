@@ -1,7 +1,12 @@
-vendor
+.git
+.github
 node_modules
+vendor
 storage/*.key
 .env
-.DS_Store
-.idea
-.vscode
+.env.backup
+.phpunit.result.cache
+docker-compose.yml
+Dockerfile
+.dockerignore
+README.md

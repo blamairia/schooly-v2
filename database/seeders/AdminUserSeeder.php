@@ -19,19 +19,16 @@ class AdminUserSeeder extends Seeder
         $adminPassword = env('ADMIN_PASSWORD', 'admin');
         $adminName = env('ADMIN_NAME', 'Administrator');
 
-        // Don't create if a user with this email already exists
-        if (User::where('email', $adminEmail)->exists()) {
-            $this->command->info("Admin user already exists: {$adminEmail}");
-            return;
-        }
+        // Update or create the admin user
+        User::updateOrCreate(
+            ['email' => $adminEmail],
+            [
+                'name' => $adminName,
+                'email_verified_at' => Carbon::now(),
+                'password' => Hash::make($adminPassword),
+            ]
+        );
 
-        User::create([
-            'name' => $adminName,
-            'email' => $adminEmail,
-            'email_verified_at' => Carbon::now(),
-            'password' => Hash::make($adminPassword),
-        ]);
-
-        $this->command->info("Admin user created: {$adminEmail}");
+        $this->command->info("Admin user setup completed for: {$adminEmail}");
     }
 }
