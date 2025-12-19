@@ -6,12 +6,14 @@
     </div>
 
     <!-- Filament Login Form -->
-    {{ $this->form }}
+    <x-filament-panels::form wire:submit="authenticate">
+        {{ $this->form }}
 
-    <x-filament-panels::form.actions
-        :actions="$this->getCachedFormActions()"
-        :full-width="$this->hasFullWidthFormActions()"
-    />
+        <x-filament-panels::form.actions
+            :actions="$this->getCachedFormActions()"
+            :full-width="$this->hasFullWidthFormActions()"
+        />
+    </x-filament-panels::form>
 
     <!-- Demo Credentials -->
     <div class="mt-8 p-5 bg-blue-50 border border-blue-200 rounded-lg">
@@ -40,4 +42,5 @@
         </p>
     </div>
 </div>
+
 
