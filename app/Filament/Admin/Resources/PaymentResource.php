@@ -35,6 +35,10 @@ class PaymentResource extends Resource
     protected static ?string $model = Payment::class;
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
 
+    protected static ?string $navigationGroup = 'Payments';
+
+    protected static ?int $navigationSort = 1;
+
     use ExposesTableToWidgets;
 
     public static function form(Form $form): Form

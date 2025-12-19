@@ -20,7 +20,6 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
 
 class AdminPanelProvider extends PanelProvider
@@ -30,24 +29,36 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')
-
+            ->login(\App\Filament\Admin\Pages\Auth\CustomLogin::class)
+            ->brandName('Schooly')
+            ->brandLogo(asset('images/logo.svg'))
+            ->brandLogoHeight('3rem')
+            ->darkModeBrandLogo(asset('images/logo.svg'))
+            ->font('Outfit')
+            ->colors([
+                'primary' => Color::Blue,
+                'gray' => Color::Slate,
+            ])
+            ->sidebarCollapsibleOnDesktop()
+            ->maxContentWidth('full')
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([
-
+                Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
-
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
-
+                // Widgets\AccountWidget::class,
+                // Widgets\FilamentInfoWidget::class,
             ])
             ->databaseNotifications()
             ->plugins([
-                FilamentApexChartsPlugin::make(),
-
                 FilamentSpatieLaravelBackupPlugin::make(),
+            ])
+            ->navigationGroups([
+                'Students',
+                'Payments',
+                'Settings',
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -61,7 +72,6 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->viteTheme('resources/css/filament/admin/theme.css')
-
             ->authMiddleware([
                 Authenticate::class,
             ]);

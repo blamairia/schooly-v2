@@ -15,6 +15,12 @@ class StudyClassResource extends Resource
     protected static ?string $model = StudyClass::class;
     protected static ?string $navigationIcon = 'heroicon-o-home';
 
+    protected static ?string $navigationGroup = 'Students';
+
+    protected static ?string $navigationLabel = 'Classes';
+
+    protected static ?int $navigationSort = 3;
+
     public static function form(Form $form): Form
     {
         return $form

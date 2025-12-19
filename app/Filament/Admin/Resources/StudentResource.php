@@ -33,6 +33,10 @@ class StudentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user';
 
+    protected static ?string $navigationGroup = 'Students';
+
+    protected static ?int $navigationSort = 1;
+
     public static function form(Form $form): Form
     {
         return $form
@@ -275,22 +279,22 @@ class StudentResource extends Resource
                 ->getStateUsing(function ($record) use ($paymentType) {
                     // Check if the student is external
                     if ($record->external) {
-                        // If it's the 'Resturant' payment type, show an icon or "N/A" for external students
+                        // If it's the 'Ecolage' payment type, show "N/A" for external students
                         if ($paymentType->name === 'Ecolage') {
-                            return 'N/A'; // You can also use an icon here
+                            return 'N/A';
                         }
                     }
 
-                    // Fetch the pre-calculated total from the payment_totals table
-                    $paymentTotal = PaymentTotal::where('student_id', $record->id)
+                    // Use the eager-loaded paymentTotals relationship instead of querying
+                    $paymentTotal = $record->paymentTotals
                         ->where('payment_type_id', $paymentType->id)
-                        ->value('total_amount');
+                        ->first();
 
-                    return $paymentTotal ? number_format($paymentTotal, 2) : '0.00';
+                    return $paymentTotal ? number_format($paymentTotal->total_amount, 2) : '0.00';
                 })
-                ->formatStateUsing(fn($state) => $state === 'N/A' ? 'N/A' : $state) // Optionally format 'N/A'
-                ->icon(fn($state) => $state === 'N/A' ? 'heroicon-o-x-circle' : null) // Optionally add an icon
-                ->iconPosition('after'); // Display the icon after the text
+                ->formatStateUsing(fn($state) => $state === 'N/A' ? 'N/A' : $state)
+                ->icon(fn($state) => $state === 'N/A' ? 'heroicon-o-x-circle' : null)
+                ->iconPosition('after');
         })->toArray();
 
 
@@ -301,11 +305,12 @@ class StudentResource extends Resource
 
         // Merge static and dynamic columns
         return $table
-
+            // Eager load relationships to prevent N+1 queries
+            ->modifyQueryUsing(fn (Builder $query) => $query
+                ->with(['paymentTotals', 'classAssigned', 'cassier', 'studyYear'])
+            )
             ->columns(array_merge($staticColumns, $dynamicColumns))
             ->filters([
-
-
                 Filter::make('payments_today')
                     ->label('Payments Today')
                     ->query(function (Builder $query) {
@@ -317,17 +322,32 @@ class StudentResource extends Resource
                         // Apply the filter by student IDs
                         $query->whereIn('id', $studentIdsWithPaymentsToday);
                     }),
-                    // Class Assigned Filter Dropdown
-                   SelectFilter::make('classAssigned')
+
+                SelectFilter::make('classAssigned')
                     ->relationship('classAssigned', 'name')
-                    ->label('Class Assigned')
-                    ->placeholder('Select a Class'),
+                    ->label('Class')
+                    ->placeholder('All Classes')
+                    ->preload()
+                    ->searchable(),
 
+                SelectFilter::make('study_year_id')
+                    ->relationship('studyYear', 'year')
+                    ->label('Study Year')
+                    ->placeholder('All Years')
+                    ->preload(),
 
+                Filter::make('external')
+                    ->label('External Only')
+                    ->toggle()
+                    ->query(fn (Builder $query) => $query->where('external', true)),
 
-
-
-                ],layout: FiltersLayout::AboveContent) // Add the filter for payments made today
+                Filter::make('has_debt')
+                    ->label('With Outstanding Debt')
+                    ->toggle()
+                    ->query(fn (Builder $query) => $query->whereHas('payments', 
+                        fn ($q) => $q->where('amount_due', '>', 0)
+                    )),
+            ], layout: FiltersLayout::AboveContentCollapsible) // Add the filter for payments made today
 
                 ->actions([
 

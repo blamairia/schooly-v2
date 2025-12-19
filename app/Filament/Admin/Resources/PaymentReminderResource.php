@@ -23,6 +23,8 @@ class PaymentReminderResource extends Resource
 
     protected static ?string $navigationGroup = 'Payments';
 
+    protected static ?int $navigationSort = 3;
+
     public static function getEloquentQuery(): Builder
 {
     return parent::getEloquentQuery()

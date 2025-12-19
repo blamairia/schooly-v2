@@ -9,10 +9,10 @@ class StudyClass extends Model
     protected $fillable = [
         'name',
     ];
-    protected $table = 'studyclass';
+    protected $table = 'study_classes';
 
     public function students(): HasMany
     {
-        return $this->hasMany(Student::class, 'class_assigned');
+        return $this->hasMany(Student::class, 'class_assigned_id');
     }
 }

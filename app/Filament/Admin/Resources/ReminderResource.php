@@ -16,6 +16,10 @@ class ReminderResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-bell-alert';
 
+    protected static ?string $navigationGroup = 'Payments';
+
+    protected static ?int $navigationSort = 4;
+
     public static function form(Form $form): Form
     {
         return $form

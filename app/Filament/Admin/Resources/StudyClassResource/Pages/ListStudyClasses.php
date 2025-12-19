@@ -16,4 +16,11 @@ class ListStudyClasses extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            StudyClassResource\Widgets\StudyClassStatsOverview::class,
+        ];
+    }
 }
