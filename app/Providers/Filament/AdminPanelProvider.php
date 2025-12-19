@@ -31,9 +31,9 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login(\App\Filament\Admin\Pages\Auth\CustomLogin::class)
             ->brandName('Schooly')
-            ->brandLogo(asset('images/logo.svg'))
-            ->brandLogoHeight('3rem')
-            ->darkModeBrandLogo(asset('images/logo.svg'))
+            ->brandLogo(fn () => view('filament.components.brand'))
+            ->brandLogoHeight('2.5rem')
+            ->darkModeBrandLogo(fn () => view('filament.components.brand'))
             ->font('Outfit')
             ->colors([
                 'primary' => Color::Blue,

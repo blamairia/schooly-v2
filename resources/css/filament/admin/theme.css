@@ -1,0 +1,10 @@
+@import '/vendor/filament/filament/resources/css/theme.css';
+
+/* Custom sidebar brand logo - hide text when sidebar is collapsed */
+.fi-sidebar-nav-brand-collapsed .sidebar-brand-text {
+    display: none;
+}
+
+.fi-sidebar-nav-brand-expanded .sidebar-brand-icon {
+    display: none;
+}
