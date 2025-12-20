@@ -34,12 +34,11 @@ A modern payment management system built with Laravel and FilamentPHP, designed 
 ## 📸 Screenshots
 
 ### Login Page
-<!-- Placeholder for login screenshot -->
-![Login Page](path/to/login-screenshot.png)
+![Login Page](doc/screenshots/login.png)
 
 ### Dashboard
-<!-- Placeholder for dashboard screenshot -->
-![Dashboard](path/to/dashboard-screenshot.png)
+![Dashboard](doc/screenshots/dashboard.png)
+
 
 ## 🛠️ Tech Stack
 
