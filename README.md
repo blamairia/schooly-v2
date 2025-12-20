@@ -64,7 +64,7 @@ A modern payment management system built with Laravel and FilamentPHP, designed 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/schooly-v2.git
+   git clone https://github.com/blamairia/schooly-v2.git
    cd schooly-v2
    ```
 
@@ -205,12 +205,19 @@ This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
 
+**Billel Lamairia**
+
+- 🌐 Portfolio: [blamairia.me](https://blamairia.me)
+- 💻 GitHub: [@blamairia](https://github.com/blamairia)
+- 🎮 Live Demo: [schooly.blamairia.me](https://schooly.blamairia.me)
+
 Built with ❤️ for educational institutions.
 
 ## 🔒 Security
 
-For security issues, please contact the repository owner directly.
+For security issues, please contact me directly via my portfolio.
 
 ---
 
 **Note**: This is version 2 of the Schooly payment management system, completely rebuilt with modern technologies and improved UX.
+
