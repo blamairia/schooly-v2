@@ -1,6 +1,21 @@
-# Schooly v2 - Payment Management System
+# 🎓 Schooly v2 - Payment Management System
 
-A modern payment management system built with Laravel and FilamentPHP, designed for educational institutions to manage student payments, track cash flow, and organize administrative tasks efficiently.
+<div align="center">
+
+![Laravel](https://img.shields.io/badge/Laravel-10.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
+![Filament](https://img.shields.io/badge/Filament-3.x-F59E0B?style=for-the-badge&logo=filament&logoColor=white)
+![SQL Server](https://img.shields.io/badge/SQL_Server-2019+-CC2927?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+
+**A modern payment management system built with Laravel and FilamentPHP, designed for educational institutions to manage student payments, track cash flow, and organize administrative tasks efficiently.**
+
+[Features](#-features) • [Screenshots](#-screenshots) • [Installation](#-installation) • [Tech Stack](#️-tech-stack) • [Author](#-author)
+
+🌐 **[Live Demo](https://schooly.blamairia.me/admin)** — *Login: admin@schooly.com / admin*
+
+</div>
+
+---
 
 ## 🎯 Features
 
