@@ -19,13 +19,47 @@
         body, html {
             font-family: 'Figtree', sans-serif;
         }
+        
+        /* Desktop Layout - 60% blue panel, 40% form */
+        @media (min-width: 1024px) {
+            .auth-left-panel {
+                width: 60% !important;
+                flex: 0 0 60% !important;
+            }
+            .auth-right-panel {
+                width: 40% !important;
+                flex: 0 0 40% !important;
+            }
+        }
+        
+        /* Mobile gradient background */
+        .mobile-gradient-bg {
+            background: linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #1e1b4b 100%);
+        }
+        
+        /* Glassmorphism card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        /* Subtle animation for mobile */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
     </style>
 </head>
 
 <body class="font-sans antialiased">
-    <div class="min-h-screen flex">
-        <!-- Left Panel - Branding & Image (hidden on mobile, 60% on desktop) -->
-        <div class="hidden lg:flex lg:w-3/5 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 relative overflow-hidden">
+    <!-- Desktop View -->
+    <div class="hidden lg:flex min-h-screen">
+        <!-- Left Panel - Branding & Image (60% width) -->
+        <div class="auth-left-panel bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 relative overflow-hidden">
             <!-- Background Pattern -->
             <div class="absolute inset-0 opacity-10">
                 <svg width="100%" height="100%">
@@ -43,7 +77,7 @@
             <div class="absolute bottom-20 right-20 w-80 h-80 bg-indigo-400 rounded-full opacity-10 blur-3xl"></div>
             
             <!-- Content -->
-            <div class="relative z-10 flex flex-col justify-center items-center w-full p-12 text-white">
+            <div class="relative z-10 flex flex-col justify-center items-center w-full h-full p-12 text-white">
                 <!-- Logo -->
                 <div class="flex flex-col items-center">
                     <div class="w-24 h-24 bg-white rounded-2xl flex items-center justify-center shadow-2xl">
@@ -116,10 +150,50 @@
             </div>
         </div>
         
-        <!-- Right Panel - Login Form (full width on mobile, 40% on desktop) -->
-        <div class="w-full lg:w-2/5 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen">
+        <!-- Right Panel - Login Form (40% width) -->
+        <div class="auth-right-panel flex items-center justify-center p-8 bg-gray-50">
             <div class="w-full max-w-md">
                 {{ $slot }}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile View - Beautiful gradient background with glassmorphism card -->
+    <div class="lg:hidden min-h-screen mobile-gradient-bg relative overflow-hidden">
+        <!-- Decorative floating circles -->
+        <div class="absolute top-10 right-10 w-32 h-32 bg-blue-400/20 rounded-full blur-2xl float-animation"></div>
+        <div class="absolute bottom-20 left-5 w-40 h-40 bg-indigo-400/20 rounded-full blur-2xl float-animation" style="animation-delay: -3s;"></div>
+        <div class="absolute top-1/3 left-1/4 w-24 h-24 bg-purple-400/15 rounded-full blur-xl float-animation" style="animation-delay: -1.5s;"></div>
+        
+        <!-- Content Container -->
+        <div class="relative z-10 min-h-screen flex flex-col justify-center px-5 py-8">
+            
+            <!-- Logo and Branding -->
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-white/10 backdrop-blur-sm rounded-2xl shadow-2xl mb-4 border border-white/20">
+                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-white mb-1">Schooly</h1>
+                <p class="text-blue-200/80 text-xs uppercase tracking-[0.2em]">Payment Management</p>
+            </div>
+            
+            <!-- Glassmorphism Login Card -->
+            <div class="glass-card rounded-3xl shadow-2xl p-6 mx-auto w-full max-w-sm">
+                {{ $slot }}
+            </div>
+            
+            <!-- Footer -->
+            <div class="text-center mt-6">
+                <p class="text-blue-200/60 text-xs flex items-center justify-center gap-1.5">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                    </svg>
+                    Annaba, Algeria
+                </p>
             </div>
         </div>
     </div>
