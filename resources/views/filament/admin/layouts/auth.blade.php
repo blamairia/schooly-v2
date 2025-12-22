@@ -24,8 +24,8 @@
 
 <body class="font-sans antialiased">
     <div class="min-h-screen flex">
-        <!-- Left Panel - Branding & Image (60% width) -->
-        <div class="hidden lg:flex bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 relative overflow-hidden" style="width: 60%;">
+        <!-- Left Panel - Branding & Image (hidden on mobile, 60% on desktop) -->
+        <div class="hidden lg:flex lg:w-3/5 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 relative overflow-hidden">
             <!-- Background Pattern -->
             <div class="absolute inset-0 opacity-10">
                 <svg width="100%" height="100%">
@@ -116,8 +116,8 @@
             </div>
         </div>
         
-        <!-- Right Panel - Login Form (40% width) -->
-        <div class="w-full flex items-center justify-center p-8 bg-gray-50" style="width: 40%;">
+        <!-- Right Panel - Login Form (full width on mobile, 40% on desktop) -->
+        <div class="w-full lg:w-2/5 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen">
             <div class="w-full max-w-md">
                 {{ $slot }}
             </div>
