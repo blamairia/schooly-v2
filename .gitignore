@@ -18,3 +18,4 @@ yarn-error.log
 /.idea
 /.vscode
 laravel-azure/azure_env_vars.json
+trigger
