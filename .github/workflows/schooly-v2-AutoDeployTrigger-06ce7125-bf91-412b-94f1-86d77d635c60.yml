@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout to the branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Azure Login
         uses: azure/login@v2
@@ -30,16 +30,10 @@ jobs:
         uses: azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ${{ github.workspace }}
-          _dockerfilePathKey_: _dockerfilePath_
-          _targetLabelKey_: _targetLabel_
+          dockerfilePath: Dockerfile
           registryUrl: heartlineregistry.azurecr.io
           registryUsername: ${{ secrets.SCHOOLYV2_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.SCHOOLYV2_REGISTRY_PASSWORD }}
           containerAppName: schooly-v2
           resourceGroup: portfolio
           imageToBuild: heartlineregistry.azurecr.io/schooly-v2:${{ github.sha }}
-          
-            
-
-     
-
